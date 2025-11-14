@@ -1,42 +1,45 @@
-version: '3.8'
 services:
 
-  # MySQL 服务
+  # --- 1. MySQL 服务 ---
   db-mysql:
     image: mysql:8.0
     container_name: dbsyncer-mysql
     restart: always
     ports: ["3306:3306"]
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=dbsyncer
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=virtualcampus
     volumes:
       - ./docker-data/mysql/data:/var/lib/mysql
       - ./docker-data/mysql/conf/my.cnf:/etc/mysql/my.cnf
       - ./docker-data/mysql/logs:/var/log/mysql
 
-  # PostgreSQL 服务
+  # --- 2. PostgreSQL 服务 ---
   db-postgres:
     image: postgres:15
     container_name: dbsyncer-postgres
     restart: always
     ports: ["5432:5432"]
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgrespassword
-      - POSTGRES_DB=dbsyncer
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=virtualcampus
     volumes:
       - ./docker-data/postgres:/var/lib/postgresql/data
 
-  # Oracle 服务
+  # --- 3. Oracle 服务 ---
   db-oracle:
     image: gvenzl/oracle-xe:21-slim-faststart
     container_name: dbsyncer-oracle
     restart: always
     ports: ["1521:1521"]
     environment:
-      - ORACLE_PASSWORD=oraclepassword
-      - APP_USER=dbsyncer
-      - APP_USER_PASSWORD=dbsyncerpassword
+      - ORACLE_PASSWORD=123456
+      - APP_USER=root
+      - APP_USER_PASSWORD=123456
     volumes:
-      - ./docker-data/oracle:/opt/oracle/oradata
+      - oracle-data:/opt/oracle/oradata
+
+# 让 docker 自动管理，不能持久化在目录
+volumes:
+  oracle-data:

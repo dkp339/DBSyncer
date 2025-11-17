@@ -5,5 +5,8 @@ import lombok.Data;
 @Data
 public class LoginResponse {
     private String token;
-    private long expiresIn; // 秒
+
+    public LoginResponse(String token) {
+        this.token = token;
+    }
 }

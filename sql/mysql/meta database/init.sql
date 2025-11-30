@@ -85,12 +85,12 @@ CREATE TABLE IF NOT EXISTS `data_conflicts` (
 -- 密码 '123456' 的 Bcrypt 哈希值 (成本因子=10)
 INSERT IGNORE INTO `app_users` (`username`, `password_hash`, `role`)
 VALUES
-    ('admin', '$2a$10$f.2.G.b.H.I.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z.A.B.C', 'ADMIN');
+    ('admin', '$2b$10$UvpcWokPJdlAgHXYfEX2fO8pIxL6VdN8hDuGSzeFXY2J1PbEunTdW', 'ADMIN');
 -- 备注: 上面的哈希值 $2a$10$... 是 '123456' 经过 Bcrypt 算法的结果。
 
 -- 9. 插入一个默认的普通用户 (密码: 123456)
 INSERT IGNORE INTO `app_users` (`username`, `password_hash`, `role`)
 VALUES
-    ('user', '$2a$10$f.2.G.b.H.I.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z.A.B.C', 'USER');
+    ('user', '$2b$10$UvpcWokPJdlAgHXYfEX2fO8pIxL6VdN8hDuGSzeFXY2J1PbEunTdW', 'USER');
 -- 脚本结束
 SELECT '元数据库 (SyncManager) 初始化完成。' AS `Status`;

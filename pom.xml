@@ -100,6 +100,11 @@
             <version>3.5.14</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>3.0.4</version>
+        </dependency>
 
         <!-- JWT 令牌的使用 -->
         <dependency>

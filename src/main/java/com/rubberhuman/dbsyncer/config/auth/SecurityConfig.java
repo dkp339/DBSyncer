@@ -35,7 +35,6 @@ public class SecurityConfig {
     }
 
     /**
-     * (核心变化 - Spring Security 6.1+ 最新风格)
      * 配置 HTTP 安全策略，使用 Lambda DSL
      */
     @Bean

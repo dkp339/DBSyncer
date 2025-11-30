@@ -40,8 +40,12 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            // 2. 认证失败 (密码错误)
-            return ResponseEntity.status(401).body(Map.of("error", "用户名或密码错误"));
+            // 密码错误
+            return ResponseEntity.status(401).body(Map.of("error", "密码错误"));
+        } catch (Exception e) {
+            // 捕获所有其他异常（比如用户不存在）并打印到控制台
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "认证失败: " + e.getMessage()));
         }
 
         // 3. 认证成功，加载 UserDetails

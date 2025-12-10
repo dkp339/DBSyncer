@@ -17,15 +17,16 @@ CREATE TABLE IF NOT EXISTS `app_users` (
 CREATE TABLE IF NOT EXISTS `data_sources` (
     `source_id` INT AUTO_INCREMENT PRIMARY KEY,
     `source_name` VARCHAR(100) NOT NULL UNIQUE COMMENT '例如: MySQL',
-    `db_type` ENUM('MySQL', 'Oracle', 'SQL Server', 'PostgreSQL') NOT NULL COMMENT '数据库类型',
+    `db_type` ENUM('MySQL', 'Oracle', 'PostgreSQL') NOT NULL COMMENT '数据库类型',
     `host` VARCHAR(255) NOT NULL COMMENT '主机IP或域名',
     `port` INT NOT NULL COMMENT '端口号',
     `db_name` VARCHAR(100) NOT NULL COMMENT '数据库名称',
     `username` VARCHAR(100) NOT NULL COMMENT '用户名',
-    `password_encrypted` VARCHAR(512) NOT NULL COMMENT '必须由应用程序加密存储',
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `last_test_status` ENUM('SUCCESS', 'FAILED', 'PENDING') DEFAULT 'PENDING',
-    `last_test_message` TEXT
+    `password_encrypted` VARCHAR(512) NOT NULL COMMENT '必须加密存储',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '1:启用 0:禁用',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除 0正常 1删除',
+    `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

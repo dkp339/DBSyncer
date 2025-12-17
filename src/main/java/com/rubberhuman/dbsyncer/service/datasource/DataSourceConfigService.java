@@ -4,12 +4,18 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.rubberhuman.dbsyncer.entity.datasource.DataSourceConfig;
 
 public interface DataSourceConfigService extends IService<DataSourceConfig> {
-    // 添加配置（包含密码加密逻辑）
+    // 添加配置
     boolean addDataSource(DataSourceConfig config);
 
-    // 测试连接（核心业务）
+    // 测试连接
     boolean testConnection(DataSourceConfig config);
 
-    // 获取解密后的真实配置（供同步引擎内部使用）
+    // 更新配置
+    boolean updateDataSource(DataSourceConfig config);
+
+    // 更新状态
+    void updateStatus(Long id, Integer status);
+
+    // 获取解密后的真实配置
     DataSourceConfig getDecryptedConfig(Long id);
 }

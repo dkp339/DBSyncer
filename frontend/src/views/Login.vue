@@ -36,8 +36,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import request from '../utils/request' // 确保你创建了 src/utils/request.js
-import { User, Lock } from '@element-plus/icons-vue'
+import request from '../utils/request'
 
 const router = useRouter()
 const loginFormRef = ref(null)
@@ -66,17 +65,23 @@ const handleLogin = () => {
         username: loginForm.username,
         password: loginForm.password
       }).then(res => {
-        // 登录成功，假设后端直接返回 token 字符串或者 { token: 'xxx' }
-        // 注意：根据你的后端写法，这里可能需要调整
-        // 如果后端返回的是 new LoginResponse(token)，那么这里就是 res.token
-        const token = res.token || res
 
-        localStorage.setItem('jwt_token', token)
-        ElMessage.success('登录成功')
-        router.push('/')
+        const token = res.data.token
+
+        if (token) {
+          localStorage.setItem('jwt_token', token)
+          ElMessage.success('登录成功')
+          router.push('/')
+        } else {
+          throw new Error('未获取到 Token')
+        }
 
       }).catch(err => {
         console.error(err)
+
+        const errorMsg = err.response?.data?.error || '登录失败，请检查网络'
+        ElMessage.error(errorMsg)
+
       }).finally(() => {
         loading.value = false
       })

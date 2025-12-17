@@ -20,7 +20,7 @@ public class EncryptionUtil {
     private String rootKeyString;
 
     private static final String ALGORITHM = "AES";
-    // AES/GCM/NoPadding 是目前推荐的模式，自带完整性校验
+    // AES/GCM/NoPadding 自带完整性校验
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     // GCM 推荐 IV 长度为 12 字节
     private static final int IV_LENGTH_BYTE = 12;

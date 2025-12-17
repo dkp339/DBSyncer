@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("datasource_config")
+@TableName("data_source_config")
 public class DataSourceConfig {
 
     @TableId(value = "source_id",type = IdType.AUTO)

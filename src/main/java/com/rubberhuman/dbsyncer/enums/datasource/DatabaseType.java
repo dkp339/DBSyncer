@@ -1,6 +1,7 @@
 package com.rubberhuman.dbsyncer.enums.datasource;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,7 +27,14 @@ public enum DatabaseType {
      * 默认端口: 5432
      * URL 示例: jdbc:postgresql://127.0.0.1:5432/dbname
      */
-    POSTGRESQL("POSTGRESQL", "PostgreSQL数据库", "org.postgresql.Driver", "jdbc:postgresql://%s:%s/%s");
+    POSTGRESQL("POSTGRESQL", "PostgreSQL数据库", "org.postgresql.Driver", "jdbc:postgresql://%s:%s/%s"),
+
+    /**
+     * SQL Server 数据库
+     * 默认端口: 1433
+     * URL 示例: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=dbname...
+     */
+    SQL_SERVER("SQL_SERVER", "SQL Server数据库", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%s;DatabaseName=%s;encrypt=false");
 
 
     @EnumValue

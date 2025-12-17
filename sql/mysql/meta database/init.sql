@@ -1,5 +1,7 @@
-CREATE DATABASE IF NOT EXISTS `SyncManager`
-CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+DROP DATABASE IF EXISTS `SyncManager`;
+
+CREATE DATABASE `SyncManager`
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE `SyncManager`;
 
@@ -14,10 +16,10 @@ CREATE TABLE IF NOT EXISTS `app_users` (
 
 
 -- 数据源配置表 (用于存储要同步的目标数据库)
-CREATE TABLE IF NOT EXISTS `data_sources` (
+CREATE TABLE IF NOT EXISTS `data_source_config` (
     `source_id` INT AUTO_INCREMENT PRIMARY KEY,
     `source_name` VARCHAR(100) NOT NULL UNIQUE COMMENT '例如: MySQL',
-    `db_type` ENUM('MySQL', 'Oracle', 'PostgreSQL') NOT NULL COMMENT '数据库类型',
+    `db_type` VARCHAR(20) NOT NULL COMMENT '数据库类型：MYSQL, ORACLE, POSTGRESQL, SQL_SERVER',
     `host` VARCHAR(255) NOT NULL COMMENT '主机IP或域名',
     `port` INT NOT NULL COMMENT '端口号',
     `db_name` VARCHAR(100) NOT NULL COMMENT '数据库名称',
@@ -35,13 +37,13 @@ CREATE TABLE IF NOT EXISTS `sync_tasks` (
     `task_id` INT AUTO_INCREMENT PRIMARY KEY,
     `task_name` VARCHAR(100) NOT NULL UNIQUE,
     `cron_expression` VARCHAR(100) NOT NULL COMMENT 'CRON 表达式, 例如 "0 0 2 * * ?" (每天凌晨2点)',
-    `source_db_id` INT NOT NULL COMMENT '源数据库 (外键指向 data_sources)',
-    `target_db_id` INT NOT NULL COMMENT '目标数据库 (外键指向 data_sources)',
+    `source_db_id` INT NOT NULL COMMENT '源数据库 (外键指向 data_source_config)',
+    `target_db_id` INT NOT NULL COMMENT '目标数据库 (外键指向 data_source_config)',
     `status` ENUM('ENABLED', 'DISABLED') NOT NULL DEFAULT 'DISABLED',
     `last_run_time` TIMESTAMP NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`source_db_id`) REFERENCES `data_sources`(`source_id`) ON DELETE CASCADE,
-    FOREIGN KEY (`target_db_id`) REFERENCES `data_sources`(`source_id`) ON DELETE CASCADE
+    FOREIGN KEY (`source_db_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`target_db_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -67,15 +69,15 @@ CREATE TABLE IF NOT EXISTS `data_conflicts` (
     `record_pk` VARCHAR(255) NOT NULL COMMENT '冲突记录的主键值 (用字符串存以兼容复合主键)',
     `conflict_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `status` ENUM('PENDING', 'RESOLVED') NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING: 待处理, RESOLVED: 已解决',
-    `source_a_id` INT NOT NULL COMMENT '冲突源A (外键指向 data_sources)',
+    `source_a_id` INT NOT NULL COMMENT '冲突源A (外键指向 data_source_config)',
     `data_a` JSON NOT NULL COMMENT '来自A库的数据 (JSON格式)',
-    `source_b_id` INT NOT NULL COMMENT '冲突源B (外键指向 data_sources)',
+    `source_b_id` INT NOT NULL COMMENT '冲突源B (外键指向 data_source_config)',
     `data_b` JSON NOT NULL COMMENT '来自B库的数据 (JSON格式)',
     `resolved_by_user_id` INT NULL COMMENT '解决该冲突的管理员 (外键)',
     `resolved_at` TIMESTAMP NULL,
     `resolution_choice` ENUM('A', 'B', 'MERGE') NULL COMMENT '管理员的选择',
-    FOREIGN KEY (`source_a_id`) REFERENCES `data_sources`(`source_id`) ON DELETE CASCADE,
-    FOREIGN KEY (`source_b_id`) REFERENCES `data_sources`(`source_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`source_a_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`source_b_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE,
     FOREIGN KEY (`resolved_by_user_id`) REFERENCES `app_users`(`user_id`) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

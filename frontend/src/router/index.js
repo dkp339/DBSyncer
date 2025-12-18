@@ -25,15 +25,19 @@ const routes = [
                 // 欢迎页（Dashboard）
                 path: 'welcome',
                 name: 'Welcome',
-                // 你可以新建一个简单的 Welcome.vue，或者暂时先用 DataSource 占位
                 component: () => import('../views/Welcome.vue')
             },
             {
                 // 数据源管理页面
                 path: 'datasource',
                 name: 'DataSource',
-                // 假设你的文件路径是 src/views/datasource/index.vue
-                component: () => import('../views/datasource/index.vue')
+                component: () => import('../views/data/DataSource.vue')
+            },
+            {
+                path: 'query',
+                name: 'DataQuery',
+                component: () => import('../views/data/DataQuery.vue'),
+                meta: { title: 'SQL查询台' }
             }
         ]
     }

@@ -66,7 +66,7 @@ const handleLogin = () => {
         password: loginForm.password
       }).then(res => {
 
-        const token = res.data.token
+        const token = res.token
 
         if (token) {
           localStorage.setItem('jwt_token', token)
@@ -77,10 +77,7 @@ const handleLogin = () => {
         }
 
       }).catch(err => {
-        console.error(err)
-
-        const errorMsg = err.response?.data?.error || '登录失败，请检查网络'
-        ElMessage.error(errorMsg)
+        console.error('登录流程中断', err)
 
       }).finally(() => {
         loading.value = false

@@ -1,4 +1,4 @@
-package com.rubberhuman.dbsyncer.DTO.datasource;
+package com.rubberhuman.dbsyncer.dto.datasource;
 
 import lombok.Data;
 

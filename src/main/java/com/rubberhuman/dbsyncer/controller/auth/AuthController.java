@@ -1,7 +1,7 @@
 package com.rubberhuman.dbsyncer.controller.auth;
 
-import com.rubberhuman.dbsyncer.DTO.auth.LoginRequest;
-import com.rubberhuman.dbsyncer.DTO.auth.LoginResponse;
+import com.rubberhuman.dbsyncer.dto.auth.LoginRequest;
+import com.rubberhuman.dbsyncer.dto.auth.LoginResponse;
 import com.rubberhuman.dbsyncer.util.JwtTokenUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.rubberhuman.dbsyncer.controller.datasource;
 
-import com.rubberhuman.dbsyncer.DTO.datasource.StatusParam;
+import com.rubberhuman.dbsyncer.dto.datasource.StatusParam;
 import com.rubberhuman.dbsyncer.entity.datasource.DataSourceConfig;
 import com.rubberhuman.dbsyncer.service.datasource.DataSourceConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/datasource")

@@ -22,6 +22,10 @@
           <span>数据源配置</span>
         </el-menu-item>
 
+        <el-menu-item index="/query">
+          <el-icon><Search /></el-icon> <span>数据查询台</span>
+        </el-menu-item>
+
       </el-menu>
     </el-aside>
 
@@ -42,7 +46,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { HomeFilled, DataLine } from '@element-plus/icons-vue'
+import {HomeFilled, DataLine, Search} from '@element-plus/icons-vue'
 
 const router = useRouter()
 

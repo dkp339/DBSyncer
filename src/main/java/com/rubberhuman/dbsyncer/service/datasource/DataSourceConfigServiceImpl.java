@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 
 import java.sql.Connection;
@@ -119,34 +120,6 @@ public class DataSourceConfigServiceImpl extends ServiceImpl<DataSourceConfigMap
         if (!success) {
             throw new BusinessException("更新失败，数据源可能不存在");
         }
-    }
-
-    @Override
-    public DataSourceConfig getDecryptedConfig(Long id) {
-        // 数据库内 password 是密文
-        DataSourceConfig config = this.getById(id);
-
-        if (config == null) {
-            return null;
-        }
-
-        String encryptedPwd = config.getPassword();
-
-        // 解密
-        if (encryptedPwd != null && !encryptedPwd.isEmpty()) {
-            try {
-                String plainPwd = encryptionUtil.decrypt(encryptedPwd);
-
-                // 将明文密码设置回 config 实体对象中
-                config.setPassword(plainPwd);
-
-            } catch (Exception e) {
-                log.error("数据源ID=" + id + " 密码解密失败", e);
-                throw new BusinessException("数据源配置异常：密码解密失败，请确认密钥配置一致", e);
-            }
-        }
-
-        return config;
     }
 
 

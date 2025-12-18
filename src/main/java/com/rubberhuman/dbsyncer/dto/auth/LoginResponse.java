@@ -1,4 +1,4 @@
-package com.rubberhuman.dbsyncer.DTO.auth;
+package com.rubberhuman.dbsyncer.dto.auth;
 
 import lombok.Data;
 

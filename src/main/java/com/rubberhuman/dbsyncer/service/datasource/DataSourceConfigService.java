@@ -16,6 +16,4 @@ public interface DataSourceConfigService extends IService<DataSourceConfig> {
     // 更新状态
     void updateStatus(Long id, Integer status);
 
-    // 获取解密后的真实配置
-    DataSourceConfig getDecryptedConfig(Long id);
 }

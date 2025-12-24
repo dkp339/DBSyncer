@@ -3,13 +3,17 @@ package com.rubberhuman.dbsyncer.util;
 import com.rubberhuman.dbsyncer.entity.datasource.DataSourceConfig;
 import com.rubberhuman.dbsyncer.exception.BusinessException;
 import com.rubberhuman.dbsyncer.service.datasource.DataSourceConfigService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
 
+import com.rubberhuman.dbsyncer.enums.datasource.DatabaseType;
+
 @Component
+@Slf4j
 public class DynamicDbUtil {
 
     @Autowired
@@ -39,8 +43,11 @@ public class DynamicDbUtil {
             throw new BusinessException("数据源配置不存在: " + sourceId);
         }
 
-        // 提取用户名等明文
-        String url = config.getDbType().formatUrl(config.getHost(), config.getPort(), config.getDbName());
+        String dbName = config.getDbName();
+
+        String url = config.getDbType().formatUrl(config.getHost(), config.getPort(), dbName);
+
+        log.info(">>> [Debug JDBC] SourceID={} URL: {}", sourceId, url);
 
         String username;
         String password;

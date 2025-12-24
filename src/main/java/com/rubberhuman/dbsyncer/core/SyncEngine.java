@@ -71,6 +71,28 @@ public class SyncEngine {
     private void processSource(DataSourceConfig sourceDb, List<DataSourceConfig> allDbs) {
         Long sourceId = sourceDb.getSourceId();
 
+        // debug
+        if ("POSTGRESQL".equals(sourceDb.getDbType().name())) { // 只针对 PG 调试
+            try {
+                JdbcTemplate jt = dynamicDbUtil.getSyncWorkerJdbcTemplate(sourceId);
+
+                // 1. 查当前连接的数据库名
+                String currentDb = jt.queryForObject("SELECT current_database()", String.class);
+
+                // 2. 查当前的 Schema 搜索路径
+                String searchPath = jt.queryForObject("SHOW search_path", String.class);
+
+                // 3. 查当前 Schema
+                String currentSchema = jt.queryForObject("SELECT current_schema()", String.class);
+
+                log.info(">>> [Debug PG] Source={} | DB={} | Schema={} | SearchPath={}",
+                        sourceDb.getSourceName(), currentDb, currentSchema, searchPath);
+
+            } catch (Exception e) {
+                log.error(">>> [Debug PG] 探针执行失败", e);
+            }
+        }
+
         // 拉取所有 sourceDb 中未同步的事件
         List<SyncEvent> events = syncEventService.getUnprocessedList(sourceId, batchSize);
         if (events.isEmpty()) {
@@ -206,16 +228,19 @@ public class SyncEngine {
     }
 
     public void executeUpsert(JdbcTemplate jt, String tableName, String pkCol, String pkVal, Map<String, Object> data) {
-        int rows = executeUpdate(jt, tableName, pkCol, pkVal, data);
-
-        if (rows == 0) {
-            try {
-                executeInsert(jt, tableName, data);
-            } catch (Exception e) {
-                // 防止极端情况
-                log.warn("INSERT 操作失败，尝试第二次 UPDATE 操作: {}", e.getMessage());
-                executeUpdate(jt, tableName, pkCol, pkVal, data);
+        try {
+            int rows = executeUpdate(jt, tableName, pkCol, pkVal, data);
+            if (rows == 0) {
+                try {
+                    executeInsert(jt, tableName, data);
+                } catch (Exception e) {
+                    log.warn("INSERT 失败，尝试转为 UPDATE : {}", e.getMessage());
+                    executeUpdate(jt, tableName, pkCol, pkVal, data);
+                }
             }
+        } catch (Exception e) {
+            log.error("同步到目标库失败。表: {}, 主键: {}, 错误: {}", tableName, pkVal, e.getCause().getMessage());
+            throw e;
         }
     }
 

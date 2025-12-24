@@ -27,7 +27,7 @@ public enum DatabaseType {
      * 默认端口: 5432
      * URL 示例: jdbc:postgresql://127.0.0.1:5432/dbname
      */
-    POSTGRESQL("POSTGRESQL", "PostgreSQL数据库", "org.postgresql.Driver", "jdbc:postgresql://%s:%s/%s"),
+    POSTGRESQL("POSTGRESQL", "PostgreSQL数据库", "org.postgresql.Driver", "jdbc:postgresql://%s:%s/%s?stringtype=unspecified"),
 
     /**
      * SQL Server 数据库

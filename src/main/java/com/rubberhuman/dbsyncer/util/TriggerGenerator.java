@@ -7,7 +7,6 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 
-import java.util.List;
 
 public class TriggerGenerator {
 
@@ -17,24 +16,15 @@ public class TriggerGenerator {
     // 版本号字段名称
     private static final String VERSION_COL = "sync_version";
 
-    /**
-     * 生成入口
-     * @param ddlSql 建表 SQL 文本
-     * @param dbType 数据库类型
-     * @return 生成的触发器 SQL
-     */
     public static String generate(String ddlSql, DatabaseType dbType) {
         StringBuilder result = new StringBuilder();
 
         try {
-            // 1. 针对 Postgres/Oracle 的通用函数/存储过程头（只生成一次）
             if (dbType == DatabaseType.POSTGRESQL) {
                 result.append(getPostgresFunction()).append("\n\n");
             }
 
-            // 2. 解析 SQL 语句
-            // 注意：jsqlparser 可能不支持复杂的 PL/SQL 块，建议只传入 CREATE TABLE 部分
-            // 这里简单处理，如果解析失败就跳过
+            // 解析 SQL 语句
             String[] potentialStmts = ddlSql.split(";");
 
             for (String sqlStmt : potentialStmts) {
@@ -66,17 +56,12 @@ public class TriggerGenerator {
         return result.toString();
     }
 
-    /**
-     * 寻找主键列名
-     */
     private static String findPrimaryKey(CreateTable createTable) {
-        // 1. 检查列定义里的 PRIMARY KEY (例如 id INT PRIMARY KEY)
         if (createTable.getColumnDefinitions() != null) {
             for (ColumnDefinition col : createTable.getColumnDefinitions()) {
                 if (col.getColumnSpecs() != null) {
                     for (String spec : col.getColumnSpecs()) {
                         if ("PRIMARY".equalsIgnoreCase(spec) || "KEY".equalsIgnoreCase(spec)) {
-                            // 简单的包含判断，实际可能需要更严谨的判断
                             if (col.getColumnSpecs().toString().toUpperCase().contains("PRIMARY")) {
                                 return col.getColumnName();
                             }
@@ -86,7 +71,6 @@ public class TriggerGenerator {
             }
         }
 
-        // 2. 检查索引定义里的 PRIMARY KEY (例如 PRIMARY KEY (id))
         if (createTable.getIndexes() != null) {
             for (Index index : createTable.getIndexes()) {
                 if ("PRIMARY KEY".equalsIgnoreCase(index.getType())) {
@@ -98,9 +82,7 @@ public class TriggerGenerator {
         return null;
     }
 
-    /**
-     * 根据数据库类型构建 SQL
-     */
+
     private static String buildTriggerSql(String tableName, String pkCol, DatabaseType dbType) {
         switch (dbType) {
             case MYSQL:
@@ -109,7 +91,7 @@ public class TriggerGenerator {
                 return buildOracle(tableName, pkCol);
             case POSTGRESQL:
                 return buildPostgres(tableName, pkCol);
-            case SQL_SERVER: // 2. 新增 SQL Server 支持
+            case SQL_SERVER:
                 return buildSqlServer(tableName, pkCol);
             default:
                 return "-- 不支持的数据库类型: " + dbType.getDescription();

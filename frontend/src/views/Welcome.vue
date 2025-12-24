@@ -81,8 +81,6 @@
               <el-alert title="数据每 5 秒自动刷新" type="info" :closable="false" show-icon />
 
               <el-button type="primary" plain icon="Refresh" @click="loadData">手动刷新</el-button>
-
-              <el-button type="danger" icon="Odometer" @click="handleSimulation">开始流量模拟 (压测)</el-button>
             </div>
           </el-card>
         </el-col>
@@ -327,16 +325,6 @@ const renderChart = (data) => {
 
 const handleResize = () => {
   if (myChart) myChart.resize()
-}
-
-// 模拟压测 (可选)
-const handleSimulation = async () => {
-  if (!currentSourceId.value) return
-  try {
-    // 假设你后面会写这个接口
-    // await request.post('/simulation/start', null, { params: { sourceId: currentSourceId.value } })
-    ElMessage.info('压测指令已发送(需后端实现 SimulationController)')
-  } catch(e) {}
 }
 
 // --- 辅助函数 ---

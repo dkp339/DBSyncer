@@ -63,6 +63,7 @@
           <div>
             <el-button type="info" link @click="clearSql">清空</el-button>
             <el-button type="primary" icon="VideoPlay" :loading="executing" @click="handleExecute">运行 (Run)</el-button>
+            <el-button type="success" icon="DataAnalysis" :loading="analyzing" @click="handleExplain">分析 (Explain)</el-button>
           </div>
         </div>
 
@@ -119,7 +120,7 @@ import { ref, computed, onMounted } from 'vue'
 import request from '@/utils/request.js'
 import { ElMessage } from 'element-plus'
 // 引入图标
-import { Grid, VideoPlay, Search } from '@element-plus/icons-vue'
+import { Grid, VideoPlay, Search, DataAnalysis } from '@element-plus/icons-vue' // 加上 DataAnalysis
 
 // --- 状态数据 ---
 const sourceList = ref([])
@@ -134,6 +135,7 @@ const lastExecTime = ref(null)  // 耗时统计
 
 const treeLoading = ref(false)
 const executing = ref(false)
+const analyzing = ref(false)
 
 // --- 计算属性：表名过滤 ---
 const filteredTableList = computed(() => {
@@ -174,10 +176,7 @@ const handleSourceChange = async (val) => {
 // 3. 点击表名：生成 SQL
 const handleTableClick = (tableName) => {
   currentTable.value = tableName
-  // 自动生成查询语句 (覆盖输入框)
   sqlContent.value = `SELECT * FROM ${tableName} LIMIT 50`
-  // 可选：是否自动执行？为了安全，建议让用户自己点运行
-  // handleExecute()
 }
 
 // 4. 执行查询
@@ -211,6 +210,43 @@ const handleExecute = async () => {
     // request.js 会弹红框，这里不用重复弹
   } finally {
     executing.value = false
+  }
+}
+
+const handleExplain = async () => {
+  if (!currentSourceId.value) {
+    ElMessage.warning('请先选择数据源')
+    return
+  }
+  if (!sqlContent.value.trim()) {
+    ElMessage.warning('请输入 SQL 语句')
+    return
+  }
+
+  const upperSql = sqlContent.value.trim().toUpperCase()
+  if (!upperSql.startsWith('SELECT')) {
+    ElMessage.warning('只有 SELECT 查询语句支持优化分析')
+    return
+  }
+
+  // 清空之前的执行耗时，因为 EXPLAIN 通常瞬间完成，不需要统计耗时
+  analyzing.value = true
+  lastExecTime.value = null
+  queryResult.value = []
+
+  try {
+    const res = await request.post('/meta/explain', {
+      sourceId: currentSourceId.value,
+      sql: sqlContent.value
+      // explain 不需要 limit 和 timeout，传默认的即可
+    })
+
+    queryResult.value = res
+    ElMessage.success('SQL 分析完成，请查看下方执行计划')
+  } catch (error) {
+    // request.js 处理报错
+  } finally {
+    analyzing.value = false
   }
 }
 

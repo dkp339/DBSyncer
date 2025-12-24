@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import java.util.List;
 
 @Service
 public class DataSourceConfigServiceImpl extends ServiceImpl<DataSourceConfigMapper, DataSourceConfig> implements DataSourceConfigService {
@@ -121,6 +121,14 @@ public class DataSourceConfigServiceImpl extends ServiceImpl<DataSourceConfigMap
             throw new BusinessException("更新失败，数据源可能不存在");
         }
     }
+
+    @Override
+    public List<DataSourceConfig> listEnabled() {
+        return this.lambdaQuery()
+                .eq(DataSourceConfig::getStatus, 1)
+                .list();
+    }
+
 
 
     // ******** update 相关辅助方法 ********

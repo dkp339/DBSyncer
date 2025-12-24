@@ -10,8 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MetadataServiceImpl implements MetadataService {
@@ -35,7 +38,10 @@ public class MetadataServiceImpl implements MetadataService {
         String sql = getTableListSql(config);
 
         try {
-            return jdbcTemplate.queryForList(sql, String.class);
+            List<String> tables = jdbcTemplate.queryForList(sql, String.class);
+            return tables.stream()
+                    .filter(tableName -> !tableName.equalsIgnoreCase("sync_event"))
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             throw new BusinessException("获取表列表失败: " + e.getMessage());
         }
@@ -58,11 +64,39 @@ public class MetadataServiceImpl implements MetadataService {
         int timeout = (request.getTimeoutSeconds() != null) ? request.getTimeoutSeconds() : 10;
         jdbcTemplate.setQueryTimeout(timeout);
 
+        String upperSql = sql.toUpperCase();
         try {
-            return jdbcTemplate.queryForList(sql);
+            // 查询语句
+            if (upperSql.startsWith("SELECT") || upperSql.startsWith("SHOW") || upperSql.startsWith("DESC")) {
+                return jdbcTemplate.queryForList(sql);
+            }
+            // 增删改语句，返回影响行数 (int)
+            else {
+                int rows = jdbcTemplate.update(sql);
+                Map<String, Object> result = new HashMap<>();
+                result.put("affected_rows", rows);
+                result.put("message", "执行成功");
+                return Collections.singletonList(result);
+            }
+
         } catch (Exception e) {
             throw new BusinessException("SQL 执行错误: " + e.getCause().getMessage());
         }
+    }
+
+    // 分析优化
+    @Override
+    public List<Map<String, Object>> explainSql(SqlQueryRequest request) {
+
+        String sql = request.getSql().trim();
+        if (!sql.toUpperCase().startsWith("SELECT")) {
+            throw new BusinessException("只有 SELECT 语句支持分析优化");
+        }
+
+        String explainSql = "EXPLAIN " + sql;
+
+        JdbcTemplate jdbcTemplate = dynamicDbUtil.getJdbcTemplate(request.getSourceId());
+        return jdbcTemplate.queryForList(explainSql);
     }
 
     // 辅助方法：生成不同数据库系统下的获取所有表名的方法

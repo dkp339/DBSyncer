@@ -28,4 +28,10 @@ public class MetadataController {
         List<Map<String, Object>> result = metadataService.executeSql(request);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/explain")
+    public ResponseEntity<List<Map<String, Object>>> explainSql(@RequestBody @Validated SqlQueryRequest request) {
+        List<Map<String, Object>> result = metadataService.explainSql(request);
+        return ResponseEntity.ok(result);
+    }
 }

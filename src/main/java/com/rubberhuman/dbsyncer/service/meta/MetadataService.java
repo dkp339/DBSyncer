@@ -12,4 +12,6 @@ public interface MetadataService {
 
     // 执行任意 SQL 查询
     List<Map<String, Object>> executeSql(SqlQueryRequest request);
+
+    List<Map<String, Object>> explainSql(SqlQueryRequest request);
 }

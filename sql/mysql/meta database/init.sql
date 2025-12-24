@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `app_users` (
     `password_hash` VARCHAR(255) NOT NULL COMMENT '必须存储加密后的哈希值',
     `role` ENUM('ADMIN', 'USER') NOT NULL DEFAULT 'USER' COMMENT 'ADMIN: 管理员, USER: 普通用户',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- 数据源配置表 (用于存储要同步的目标数据库)
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `data_source_config` (
     `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除 0正常 1删除',
     `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- 周期性同步任务表
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `sync_tasks` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`source_db_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE,
     FOREIGN KEY (`target_db_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- 同步日志表
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `sync_logs` (
     `records_affected` INT DEFAULT 0,
     `message` TEXT COMMENT '详细日志或错误信息',
     FOREIGN KEY (`task_id`) REFERENCES `sync_tasks`(`task_id`) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- 数据冲突表
@@ -79,21 +79,38 @@ CREATE TABLE IF NOT EXISTS `data_conflicts` (
     FOREIGN KEY (`source_a_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE,
     FOREIGN KEY (`source_b_id`) REFERENCES `data_source_config`(`source_id`) ON DELETE CASCADE,
     FOREIGN KEY (`resolved_by_user_id`) REFERENCES `app_users`(`user_id`) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 系统配置表
+CREATE TABLE IF NOT EXISTS `sys_config` (
+    config_key VARCHAR(50) PRIMARY KEY,
+    config_value VARCHAR(255),
+    description VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+INSERT IGNORE INTO `sys_config` (config_key, config_value, description)
+VALUES ('sync.cron', '0 0 1 * * ?', '周期同步Cron表达式');
 
--- 8. 插入一个默认的管理员账户 (密码: 123456)
--- 使用 INSERT IGNORE 来确保脚本可重复运行 (如果 username 已存在, 则忽略此条)
--- 密码 '123456' 的 Bcrypt 哈希值 (成本因子=10)
 INSERT IGNORE INTO `app_users` (`username`, `password_hash`, `role`)
-VALUES
-    ('admin', '$2b$10$UvpcWokPJdlAgHXYfEX2fO8pIxL6VdN8hDuGSzeFXY2J1PbEunTdW', 'ADMIN');
--- 备注: 上面的哈希值 $2a$10$... 是 '123456' 经过 Bcrypt 算法的结果。
+VALUES ('admin', '$2b$10$UvpcWokPJdlAgHXYfEX2fO8pIxL6VdN8hDuGSzeFXY2J1PbEunTdW', 'ADMIN');
 
--- 9. 插入一个默认的普通用户 (密码: 123456)
 INSERT IGNORE INTO `app_users` (`username`, `password_hash`, `role`)
+VALUES ('user', '$2b$10$UvpcWokPJdlAgHXYfEX2fO8pIxL6VdN8hDuGSzeFXY2J1PbEunTdW', 'USER');
+
+INSERT INTO data_source_config
+(source_name, db_type, host, port, db_name, username, password_encrypted, status, deleted)
 VALUES
-    ('user', '$2b$10$UvpcWokPJdlAgHXYfEX2fO8pIxL6VdN8hDuGSzeFXY2J1PbEunTdW', 'USER');
+-- MySQL 数据源
+('MySQL-virtualcampus','MYSQL','127.0.0.1',3307,'VirtualCampus','root','HUD/ywPbjgYX5aKhQjL4htDYtjC4e1wXpQKB8URg2N6y9Q==',1,0),
+
+-- PostgreSQL 数据源
+('Postgre-virtualcampus','POSTGRESQL','127.0.0.1',5432,'virtualcampus','root','He58Pp1okg6UJjIHF4h2OzFgM2kHl0+ArYaqNh1IznVINA==',1,0),
+
+-- Oracle 数据源
+('Oracle-virtualcampus','ORACLE','127.0.0.1',1521,'XEPDB1','root','/uJMrN8RDyOvSudd87OyXOTO82QHinecsWSwlqstXzD1pQ==',1,0);
+
+
+
 -- 脚本结束
 SELECT '元数据库 (SyncManager) 初始化完成。' AS `Status`;

@@ -74,6 +74,7 @@ CREATE TABLE users (
     role VARCHAR2(20) DEFAULT 'student' CHECK (role IN ('student','teacher','admin')),
     email VARCHAR2(100),
     phone VARCHAR2(20),
+    sync_version NUMBER DEFAULT 0 NOT NULL,
     created_at DATE DEFAULT SYSDATE
 );
 
@@ -86,6 +87,7 @@ CREATE TABLE students (
     gender VARCHAR2(10) DEFAULT 'other' CHECK (gender IN ('male','female','other')),
     major VARCHAR2(100),
     grade NUMBER,
+    sync_version NUMBER DEFAULT 0 NOT NULL,
     CONSTRAINT fk_student_user FOREIGN KEY (user_id)
         REFERENCES users(user_id) ON DELETE CASCADE
 );
@@ -97,7 +99,8 @@ CREATE TABLE courses (
     course_name VARCHAR2(100) NOT NULL,
     credit NUMBER(3,1),
     teacher_name VARCHAR2(50),
-    semester VARCHAR2(20)
+    semester VARCHAR2(20),
+    sync_version NUMBER DEFAULT 0 NOT NULL
 );
 
 -- 选课表
@@ -107,6 +110,7 @@ CREATE TABLE enrollments (
      course_id NUMBER NOT NULL,
      enroll_date DATE DEFAULT SYSDATE,
      grade NUMBER(4,1),
+     sync_version NUMBER DEFAULT 0 NOT NULL,
      CONSTRAINT fk_enroll_student FOREIGN KEY (student_id)
          REFERENCES students(student_id) ON DELETE CASCADE,
      CONSTRAINT fk_enroll_course FOREIGN KEY (course_id)
@@ -121,7 +125,8 @@ CREATE TABLE books (
     publisher VARCHAR2(100),
     isbn VARCHAR2(20) UNIQUE,
     total_copies NUMBER DEFAULT 1,
-    available_copies NUMBER DEFAULT 1
+    available_copies NUMBER DEFAULT 1,
+    sync_version NUMBER DEFAULT 0 NOT NULL
 );
 
 -- 借阅记录表
@@ -131,6 +136,7 @@ CREATE TABLE borrow_records (
     book_id NUMBER NOT NULL,
     borrow_date DATE DEFAULT SYSDATE,
     return_date DATE,
+    sync_version NUMBER DEFAULT 0 NOT NULL,
     CONSTRAINT fk_borrow_student FOREIGN KEY (student_id)
         REFERENCES students(student_id) ON DELETE CASCADE,
     CONSTRAINT fk_borrow_book FOREIGN KEY (book_id)
@@ -143,7 +149,8 @@ CREATE TABLE shop_items (
     item_name VARCHAR2(100) NOT NULL,
     price NUMBER(8,2) NOT NULL,
     stock NUMBER DEFAULT 0,
-    category VARCHAR2(50)
+    category VARCHAR2(50),
+    sync_version NUMBER DEFAULT 0 NOT NULL
 );
 
 -- 订单表
@@ -154,6 +161,7 @@ CREATE TABLE orders (
     total_amount NUMBER(10,2),
     status VARCHAR2(20) DEFAULT 'pending'
         CHECK (status IN ('pending','paid','shipped','completed','cancelled')),
+    sync_version NUMBER DEFAULT 0 NOT NULL,
     CONSTRAINT fk_order_user FOREIGN KEY (user_id)
         REFERENCES users(user_id) ON DELETE CASCADE
 );

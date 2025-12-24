@@ -14,6 +14,7 @@ CREATE TABLE users (
     role VARCHAR(20) CHECK (role IN ('student','teacher','admin')) DEFAULT 'student',
     email VARCHAR(100),
     phone VARCHAR(20),
+    sync_version INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -24,7 +25,8 @@ CREATE TABLE students (
     name VARCHAR(50) NOT NULL,
     gender VARCHAR(10) CHECK (gender IN ('male','female','other')) DEFAULT 'other',
     major VARCHAR(100),
-    grade INT
+    grade INT,
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE courses (
@@ -33,7 +35,8 @@ CREATE TABLE courses (
     course_name VARCHAR(100) NOT NULL,
     credit NUMERIC(3,1),
     teacher_name VARCHAR(50),
-    semester VARCHAR(20)
+    semester VARCHAR(20),
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE enrollments (
@@ -41,7 +44,8 @@ CREATE TABLE enrollments (
     student_id INT NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
     course_id INT NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
     enroll_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    grade NUMERIC(4,1)
+    grade NUMERIC(4,1),
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE books (
@@ -51,7 +55,8 @@ CREATE TABLE books (
     publisher VARCHAR(100),
     isbn VARCHAR(20) UNIQUE,
     total_copies INT DEFAULT 1,
-    available_copies INT DEFAULT 1
+    available_copies INT DEFAULT 1,
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE borrow_records (
@@ -59,7 +64,8 @@ CREATE TABLE borrow_records (
     student_id INT NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
     book_id INT NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
     borrow_date DATE DEFAULT CURRENT_DATE,
-    return_date DATE
+    return_date DATE,
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE shop_items (
@@ -67,7 +73,8 @@ CREATE TABLE shop_items (
     item_name VARCHAR(100) NOT NULL,
     price NUMERIC(8,2) NOT NULL,
     stock INT DEFAULT 0,
-    category VARCHAR(50)
+    category VARCHAR(50),
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE orders (
@@ -75,7 +82,8 @@ CREATE TABLE orders (
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total_amount NUMERIC(10,2),
-    status VARCHAR(20) CHECK (status IN ('pending','paid','shipped','completed','cancelled')) DEFAULT 'pending'
+    status VARCHAR(20) CHECK (status IN ('pending','paid','shipped','completed','cancelled')) DEFAULT 'pending',
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 INSERT INTO users (username,password,role,email,phone) VALUES

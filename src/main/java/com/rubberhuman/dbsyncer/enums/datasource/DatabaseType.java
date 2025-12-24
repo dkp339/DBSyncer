@@ -20,7 +20,7 @@ public enum DatabaseType {
      * 默认端口: 1521
      * URL 示例 (Thin模式): jdbc:oracle:thin:@127.0.0.1:1521:ORCL
      */
-    ORACLE("ORACLE", "Oracle数据库", "oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%s:%s"),
+    ORACLE("ORACLE", "Oracle数据库", "oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@//%s:%s/%s"),
 
     /**
      * PostgreSQL 数据库
@@ -60,5 +60,17 @@ public enum DatabaseType {
      */
     public String formatUrl(String host, String port, String dbName) {
         return String.format(this.urlPattern, host, port, dbName);
+    }
+
+    public static DatabaseType fromCode(String code) {
+        if (code == null || code.isBlank()) {
+            return null;
+        }
+        for (DatabaseType type : values()) {
+            if (type.code.equalsIgnoreCase(code)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("不支持的数据库类型 code: " + code);
     }
 }

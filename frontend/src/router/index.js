@@ -38,6 +38,12 @@ const routes = [
                 name: 'DataQuery',
                 component: () => import('../views/data/DataQuery.vue'),
                 meta: { title: 'SQL查询台' }
+            },
+            {
+                path: 'sys/config',
+                name: 'SysConfig',
+                component: () => import('../views/sys/SysConfig.vue'),
+                meta: { title: '系统配置' }
             }
         ]
     }

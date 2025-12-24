@@ -4,7 +4,10 @@ import com.rubberhuman.dbsyncer.exception.BusinessException;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +22,8 @@ public class SqlSecurityManager {
     private static final Set<String> FORBIDDEN_TABLES = new HashSet<>(Arrays.asList(
             "information_schema", "mysql", "performance_schema", "sys", // MySQL
             "pg_catalog", "pg_toast", // PostgreSQL
-            "user_users", "all_users", "dba_users" // Oracle
+            "user_users", "all_users", "dba_users", // Oracle
+            "sync_event"
     ));
 
     public void check(String sql) {
@@ -31,9 +35,12 @@ public class SqlSecurityManager {
             throw new BusinessException("SQL 语法错误: " + e.getMessage());
         }
 
-        // 限制只能执行 SELECT
-        if (!(statement instanceof Select)) {
-            throw new BusinessException("控制台仅允许执行 SELECT 查询语句");
+        boolean isAllowed = (statement instanceof Select) ||
+                            (statement instanceof Insert) ||
+                            (statement instanceof Update) ||
+                            (statement instanceof Delete);
+        if (!isAllowed) {
+            throw new BusinessException("控制台仅允许执行 SELECT, INSERT, UPDATE, DELETE 语句");
         }
 
         // 提取所有涉及的表名，包括子查询、JOIN、UNION 中的表

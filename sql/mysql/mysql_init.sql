@@ -9,6 +9,7 @@ CREATE TABLE users (
     role ENUM('student','teacher','admin') DEFAULT 'student',
     email VARCHAR(100),
     phone VARCHAR(20),
+    sync_version INT NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -20,6 +21,7 @@ CREATE TABLE students (
     gender ENUM('male','female','other') DEFAULT 'other',
     major VARCHAR(100),
     grade INT,
+    sync_version INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
@@ -29,7 +31,8 @@ CREATE TABLE courses (
     course_name VARCHAR(100) NOT NULL,
     credit DECIMAL(3,1),
     teacher_name VARCHAR(50),
-    semester VARCHAR(20)
+    semester VARCHAR(20),
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE enrollments (
@@ -38,6 +41,7 @@ CREATE TABLE enrollments (
     course_id INT NOT NULL,
     enroll_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     grade DECIMAL(4,1),
+    sync_version INT NOT NULL DEFAULT 0,
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
 );
@@ -49,7 +53,8 @@ CREATE TABLE books (
     publisher VARCHAR(100),
     isbn VARCHAR(20) UNIQUE,
     total_copies INT DEFAULT 1,
-    available_copies INT DEFAULT 1
+    available_copies INT DEFAULT 1,
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE borrow_records (
@@ -58,6 +63,7 @@ CREATE TABLE borrow_records (
     book_id INT NOT NULL,
     borrow_date DATE DEFAULT (CURRENT_DATE),
     return_date DATE,
+    sync_version INT NOT NULL DEFAULT 0,
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE
 );
@@ -67,7 +73,8 @@ CREATE TABLE shop_items (
     item_name VARCHAR(100) NOT NULL,
     price DECIMAL(8,2) NOT NULL,
     stock INT DEFAULT 0,
-    category VARCHAR(50)
+    category VARCHAR(50),
+    sync_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE orders (
@@ -76,6 +83,7 @@ CREATE TABLE orders (
     order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10,2),
     status ENUM('pending','paid','shipped','completed','cancelled') DEFAULT 'pending',
+    sync_version INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 

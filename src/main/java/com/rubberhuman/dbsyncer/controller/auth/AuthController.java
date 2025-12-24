@@ -34,27 +34,26 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) throws Exception {
         try {
-            // 1. 使用 Spring Security 的 AuthenticationManager 进行认证
+            // 使用 Spring Security 的 AuthenticationManager 进行认证
             // 这一步会调用 AppUserDetailsService 和 PasswordEncoder
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            // 密码错误
             return ResponseEntity.status(401).body(Map.of("error", "密码错误"));
         } catch (Exception e) {
-            // 捕获所有其他异常（比如用户不存在）并打印到控制台
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "认证失败: " + e.getMessage()));
         }
 
-        // 3. 认证成功，加载 UserDetails
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
-
-        // 4. 生成 JWT
         final String token = jwtTokenUtil.generateToken(userDetails);
 
-        // 5. 返回 Token
-        return ResponseEntity.ok(new LoginResponse(token));
+        String role = userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(auth -> auth.getAuthority().replace("ROLE_", "")) // 去掉 ROLE_ 前缀
+                .orElse("USER");
+
+        return ResponseEntity.ok(new LoginResponse(token, userDetails.getUsername(), role));
     }
 }

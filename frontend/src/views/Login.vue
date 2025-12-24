@@ -67,9 +67,13 @@ const handleLogin = () => {
       }).then(res => {
 
         const token = res.token
+        const role = res.role
+        const username = res.username
 
         if (token) {
           localStorage.setItem('jwt_token', token)
+          localStorage.setItem('user_role', role)
+          localStorage.setItem('user_name', username)
           ElMessage.success('登录成功')
           router.push('/')
         } else {

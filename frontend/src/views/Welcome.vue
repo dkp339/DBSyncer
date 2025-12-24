@@ -1,138 +1,161 @@
 <template>
   <div class="dashboard-container" style="padding: 20px;">
 
-    <el-row :gutter="20" style="margin-bottom: 20px;">
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-title">待处理事件</div>
-          <div class="stat-value warning">{{ stats.pendingCount || 0 }}</div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-title">同步成功</div>
-          <div class="stat-value success">{{ stats.successCount || 0 }}</div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-title">同步失败/冲突</div>
-          <div class="stat-value danger">{{ stats.failedCount || 0 }}</div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-title">总事件数</div>
-          <div class="stat-value info">{{ stats.totalCount || 0 }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="20" style="margin-bottom: 20px;">
-      <el-col :xs="24" :md="16">
-        <el-card shadow="never">
-          <template #header>
-            <div class="card-header">
-              <span>同步状态分布</span>
-              <el-tag>实时数据</el-tag>
-            </div>
-          </template>
-          <div id="chart-container" style="height: 300px;"></div>
-        </el-card>
-      </el-col>
-
-      <el-col :xs="24" :md="8">
-        <el-card shadow="never" style="height: 100%;">
-          <template #header>
-            <span>运维操作</span>
-          </template>
-          <div style="display: flex; flex-direction: column; gap: 15px;">
-            <el-select v-model="currentSourceId" placeholder="选择查看的数据源" @change="handleSourceChange">
-              <el-option
-                  v-for="item in sourceList"
-                  :key="item.sourceId"
-                  :label="item.sourceName"
-                  :value="item.sourceId"
-              />
-            </el-select>
-
-            <el-alert title="数据每 5 秒自动刷新" type="info" :closable="false" show-icon />
-
-            <el-button type="primary" plain icon="Refresh" @click="loadData">手动刷新</el-button>
-
-            <el-button type="danger" icon="Odometer" @click="handleSimulation">开始流量模拟 (压测)</el-button>
+    <!-- 普通用户视图 -->
+    <div v-if="!isAdmin">
+      <el-card>
+        <template #header>
+          <div class="card-header">
+            <span>欢迎使用</span>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <el-card shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>同步日志监控</span>
-          <el-radio-group v-model="filterStatus" size="small" @change="loadLogs">
-            <el-radio-button :label="null">全部</el-radio-button>
-            <el-radio-button :label="2">仅失败</el-radio-button>
-            <el-radio-button :label="0">待处理</el-radio-button>
-          </el-radio-group>
+        </template>
+        <div style="text-align: center; padding: 40px;">
+          <h2>你好，{{ userName }}</h2>
+          <p style="color: #606266; margin-top: 10px;">
+            您可以点击左侧菜单进行 <b>数据源管理</b> 或 <b>SQL 查询</b>。
+          </p>
+          <p style="color: #909399; font-size: 12px; margin-top: 50px;">
+            当前账号权限：普通用户 (User)
+          </p>
         </div>
-      </template>
+      </el-card>
+    </div>
 
-      <el-table :data="logList" v-loading="loading" stripe style="width: 100%">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="tableName" label="表名" width="120" />
-        <el-table-column prop="opType" label="操作" width="100">
-          <template #default="{ row }">
-            <el-tag :type="getOpTag(row.opType)">{{ row.opType }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="pkValue" label="主键值" width="100" />
+    <!-- 管理员视图 -->
+    <div v-else>
+      <el-row :gutter="20" style="margin-bottom: 20px;">
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-title">待处理事件</div>
+            <div class="stat-value warning">{{ stats.pendingCount || 0 }}</div>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-title">同步成功</div>
+            <div class="stat-value success">{{ stats.successCount || 0 }}</div>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-title">同步失败/冲突</div>
+            <div class="stat-value danger">{{ stats.failedCount || 0 }}</div>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-title">总事件数</div>
+            <div class="stat-value info">{{ stats.totalCount || 0 }}</div>
+          </el-card>
+        </el-col>
+      </el-row>
 
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="getStatusTag(row.status)">
-              {{ getStatusName(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
+      <el-row :gutter="20" style="margin-bottom: 20px;">
+        <el-col :xs="24" :md="16">
+          <el-card shadow="never">
+            <template #header>
+              <div class="card-header">
+                <span>同步状态分布</span>
+                <el-tag>实时数据</el-tag>
+              </div>
+            </template>
+            <div id="chart-container" style="height: 300px;"></div>
+          </el-card>
+        </el-col>
 
-        <el-table-column prop="errorMsg" label="信息/报错" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="opTime" label="发生时间" width="170" />
+        <el-col :xs="24" :md="8">
+          <el-card shadow="never" style="height: 100%;">
+            <template #header>
+              <span>运维操作</span>
+            </template>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+              <el-select v-model="currentSourceId" placeholder="选择查看的数据源" @change="handleSourceChange">
+                <el-option
+                    v-for="item in sourceList"
+                    :key="item.sourceId"
+                    :label="item.sourceName"
+                    :value="item.sourceId"
+                />
+              </el-select>
 
-        <el-table-column label="管理操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <div v-if="row.status === 2">
-              <el-tooltip content="重置状态，让引擎重新尝试同步" placement="top">
-                <el-button type="primary" link size="small" @click="handleRetry(row)">重试</el-button>
-              </el-tooltip>
+              <el-alert title="数据每 5 秒自动刷新" type="info" :closable="false" show-icon />
 
-              <el-divider direction="vertical" />
+              <el-button type="primary" plain icon="Refresh" @click="loadData">手动刷新</el-button>
 
-              <el-tooltip content="无法修复时，强制标记为成功，跳过此错误" placement="top">
-                <el-popconfirm title="确定要强制跳过该错误吗？" @confirm="handleSkip(row)">
-                  <template #reference>
-                    <el-button type="danger" link size="small">强制通过</el-button>
-                  </template>
-                </el-popconfirm>
-              </el-tooltip>
+              <el-button type="danger" icon="Odometer" @click="handleSimulation">开始流量模拟 (压测)</el-button>
             </div>
-            <div v-else>
-              <span style="color: #909399; font-size: 12px;">无操作</span>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+          </el-card>
+        </el-col>
+      </el-row>
 
-      <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
-        <el-pagination
-            background
-            layout="prev, pager, next"
-            :total="1000"
-            :page-size="20"
-            @current-change="handlePageChange"
-        />
-      </div>
-    </el-card>
+      <el-card shadow="never">
+        <template #header>
+          <div class="card-header">
+            <span>同步日志监控</span>
+            <el-radio-group v-model="filterStatus" size="small" @change="loadLogs">
+              <el-radio-button :label="null">全部</el-radio-button>
+              <el-radio-button :label="2">仅失败</el-radio-button>
+              <el-radio-button :label="0">待处理</el-radio-button>
+            </el-radio-group>
+          </div>
+        </template>
+
+        <el-table :data="logList" v-loading="loading" stripe style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="tableName" label="表名" width="120" />
+          <el-table-column prop="opType" label="操作" width="100">
+            <template #default="{ row }">
+              <el-tag :type="getOpTag(row.opType)">{{ row.opType }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="pkValue" label="主键值" width="100" />
+
+          <el-table-column label="状态" width="100">
+            <template #default="{ row }">
+              <el-tag :type="getStatusTag(row.status)">
+                {{ getStatusName(row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="errorMsg" label="信息/报错" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="opTime" label="发生时间" width="170" />
+
+          <el-table-column label="管理操作" width="180" fixed="right">
+            <template #default="{ row }">
+              <div v-if="row.status === 2">
+                <el-tooltip content="重置状态，让引擎重新尝试同步" placement="top">
+                  <el-button type="primary" link size="small" @click="handleRetry(row)">重试</el-button>
+                </el-tooltip>
+
+                <el-divider direction="vertical" />
+
+                <el-tooltip content="无法修复时，强制标记为成功，跳过此错误" placement="top">
+                  <el-popconfirm title="确定要强制跳过该错误吗？" @confirm="handleSkip(row)">
+                    <template #reference>
+                      <el-button type="danger" link size="small">强制通过</el-button>
+                    </template>
+                  </el-popconfirm>
+                </el-tooltip>
+              </div>
+              <div v-else>
+                <span style="color: #909399; font-size: 12px;">无操作</span>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+          <el-pagination
+              background
+              layout="prev, pager, next"
+              :total="1000"
+              :page-size="20"
+              @current-change="handlePageChange"
+          />
+        </div>
+      </el-card>
+    </div>
 
   </div>
 </template>
@@ -154,26 +177,36 @@ const filterStatus = ref(null) // 默认查全部
 const currentPage = ref(1)
 let timer = null
 let myChart = null
+const isAdmin = ref(false)
+const userName = ref('')
 
 // --- 初始化与加载 ---
 onMounted(async () => {
-  await loadSources()
-  // 默认选中第一个数据源
-  if (sourceList.value.length > 0) {
-    currentSourceId.value = sourceList.value[0].sourceId
-    loadData()
-  }
+  // 1. 获取本地存储的角色信息
+  const role = localStorage.getItem('user_role')
+  userName.value = localStorage.getItem('user_name') || '用户'
 
-  // 启动定时轮询 (每5秒刷新一次)
-  timer = setInterval(() => {
-    if (currentSourceId.value) {
-      loadStats()
-      loadLogs(true) // 静默刷新，不显示 loading
+  // 2. 判断是否为管理员
+  isAdmin.value = (role === 'ADMIN')
+
+  // 3. 【核心修复】只有管理员才加载数据、启动轮询
+  if (isAdmin.value) {
+    await loadSources()
+    if (sourceList.value.length > 0) {
+      currentSourceId.value = sourceList.value[0].sourceId
+      loadData()
     }
-  }, 5000)
 
-  // 监听窗口大小变化调整图表
-  window.addEventListener('resize', handleResize)
+    // 启动轮询
+    timer = setInterval(() => {
+      if (currentSourceId.value) {
+        loadStats()
+        loadLogs(true)
+      }
+    }, 5000)
+
+    window.addEventListener('resize', handleResize)
+  }
 })
 
 onUnmounted(() => {
